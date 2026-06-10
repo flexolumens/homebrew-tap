@@ -28,7 +28,14 @@ class GitHubPrivateAssetDownloadStrategy < CurlDownloadStrategy
     asset_id = asset["id"]
     asset_url = "https://api.github.com/repos/#{@owner}/#{@repo}/releases/assets/#{asset_id}"
 
-    token = GitHub::API.credentials
+    # Credential precedence: the package-scoped explicit override wins over
+    # ambient credentials. HOMEBREW_FLX_GITHUB_TOKEN exists for users whose
+    # gh CLI is authenticated with an account that has no access to the
+    # flexolumens repos (e.g. external collaborators holding a read-only
+    # token) — ambient gh credentials must not shadow an explicit token.
+    # GitHub::API.credentials covers HOMEBREW_GITHUB_API_TOKEN and gh.
+    flx_token = ENV.fetch("HOMEBREW_FLX_GITHUB_TOKEN", nil)
+    token = flx_token.nil? || flx_token.empty? ? GitHub::API.credentials : flx_token
     extra_args = [
       "--header", "Accept: application/octet-stream",
       "--header", "X-GitHub-Api-Version: 2022-11-28",
@@ -66,14 +73,16 @@ class Flx < Formula
   def caveats
     <<~EOS
       flx reads a private GitHub release asset during install and upgrade.
-      A GitHub token with at least read access to flexolumens/k230-platform
-      is required. Provide it in one of the following ways:
+      A credential with read access to flexolumens/k230-platform is required.
+      The formula resolves it in this order:
 
-        • Set HOMEBREW_GITHUB_API_TOKEN before running brew install / upgrade:
-            HOMEBREW_GITHUB_API_TOKEN="$(gh auth token)" brew install flexolumens/tap/flx
+        1. HOMEBREW_FLX_GITHUB_TOKEN — explicit override; wins over ambient
+           credentials. For users without gh access to the flexolumens org:
+             HOMEBREW_FLX_GITHUB_TOKEN="<token>" brew upgrade flexolumens/tap/flx
 
-        • Or authenticate via the GitHub CLI (gh):
-            gh auth login
+        2. Ambient credentials — the default path for flexolumens members:
+             gh auth login
+           (HOMEBREW_GITHUB_API_TOKEN is also honored, as everywhere in brew.)
 
       The CLI itself also needs a token to resolve library dependencies.
       After install, run:
