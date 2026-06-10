@@ -55,7 +55,9 @@ class Flx < Formula
     libexec.install Dir["*"]
 
     # Install node_modules (includes native serialport — cannot be bundled).
-    system "bun", "install", "--frozen-lockfile", chdir: libexec/"cli"
+    (libexec/"cli").cd do
+      system "bun", "install", "--frozen-lockfile"
+    end
 
     # The cli/flx bash wrapper resolves its own symlinks, so a bin symlink works.
     bin.install_symlink libexec/"cli/flx"
