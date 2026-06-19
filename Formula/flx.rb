@@ -49,10 +49,10 @@ end
 class Flx < Formula
   desc "CLI for the Kendryte K230 edge-AI development platform"
   homepage "https://github.com/flexolumens/k230-platform"
-  url "https://github.com/flexolumens/k230-platform/releases/download/v0.8.1/flx-v0.8.1.tar.gz",
+  url "https://github.com/flexolumens/k230-platform/releases/download/v0.9.0/flx-v0.9.0.tar.gz",
       using: GitHubPrivateAssetDownloadStrategy
-  sha256 "1379518a311e9979668290e3796db255f167b73c27f1c2a1bbb6da8286571275"
-  version "0.8.1"
+  sha256 "6483144a4f3d1bd3d793ac4f72450c44efe7c79492b299bb1d3caa5289120fdb"
+  version "0.9.0"
   license "Nonstandard"
 
   depends_on "oven-sh/bun/bun"
